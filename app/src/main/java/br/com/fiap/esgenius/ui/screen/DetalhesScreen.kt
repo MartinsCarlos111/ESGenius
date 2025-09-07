@@ -17,15 +17,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import br.com.fiap.esgenius.data.Company
+import br.com.fiap.esgenius.model.Company
 
-// Função renomeada para DetailsScreen para seguir o padrão
 @Composable
 fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Unit) {
+    val logoColor = Color(android.graphics.Color.parseColor(company.logoColor))
+
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
@@ -38,7 +37,7 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
                     modifier = Modifier.align(Alignment.Center)
                 ) {
                     Box(
-                        modifier = Modifier.size(32.dp).clip(CircleShape).background(company.logoColor),
+                        modifier = Modifier.size(32.dp).clip(CircleShape).background(logoColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = company.name.first().toString(), color = Color.White, fontWeight = FontWeight.Bold)
@@ -55,7 +54,7 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(60.dp).clip(CircleShape).background(company.logoColor))
+                    Box(modifier = Modifier.size(60.dp).clip(CircleShape).background(logoColor))
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(text = company.name, fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
@@ -76,7 +75,6 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = "Ranking de Empresas Sustentáveis", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    // CORRIGIDO: de currentESG para latestESG
                     val sustainabilityScore = company.latestESG.governanceScore + company.latestESG.environmentalScore
                     Text(text = "Pontuação de Sustentabilidade: $sustainabilityScore", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
@@ -88,7 +86,6 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = "Ambiental (E - Environmental)", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    // CORRIGIDO: de currentESG para latestESG
                     IndicatorDetail(label = "Emissões de CO₂", value = company.latestESG.emissions)
                     IndicatorDetail(label = "Uso de energia renovável", value = company.latestESG.renewableEnergy)
                     IndicatorDetail(label = "Gestão de resíduos", value = company.latestESG.wasteManagement)
@@ -101,7 +98,6 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = "Social (S - Social)", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    // CORRIGIDO: de currentESG para latestESG
                     IndicatorDetail(label = "Políticas de diversidade", value = company.latestESG.diversityPolicies)
                     IndicatorDetail(label = "Saúde e segurança", value = company.latestESG.workerSafety)
                     IndicatorDetail(label = "Relacionamento com a comunidade", value = company.latestESG.communityRelations)
@@ -113,7 +109,6 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = "Governança (G - Governance)", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    // CORRIGIDO: de currentESG para latestESG
                     IndicatorDetail(label = "Estrutura do conselho", value = company.latestESG.boardStructure)
                     IndicatorDetail(label = "Transparência em relatórios", value = company.latestESG.transparency)
                     IndicatorDetail(label = "Políticas anticorrupção", value = company.latestESG.antiCorruption)
@@ -136,12 +131,23 @@ fun DetailsScreen(company: Company, onShowHistory: () -> Unit, onBack: () -> Uni
 
 @Composable
 fun IndicatorDetail(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
     ) {
-        Text(text = label, fontSize = 16.sp, modifier = Modifier.weight(1f))
-        Text(text = value, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Gray, textAlign = TextAlign.End)
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = value,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
