@@ -1,69 +1,142 @@
 package br.com.fiap.esgenius.ui.screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.fiap.esgenius.model.InvestmentTip
+import br.com.fiap.esgenius.model.TipCategory
+import br.com.fiap.esgenius.viewmodel.TipsViewModel
+import java.util.Locale
+import androidx.compose.material.icons.outlined.Warning
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ResponsibleInvestmentScreen() {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        item {
-            Text(
-                "Dicas de Investimento Responsável",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+fun ResponsibleInvestmentScreen(
+    tipsViewModel: TipsViewModel = viewModel()
+) {
+    val uiState by remember { mutableStateOf(tipsViewModel.uiState) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Painel Educativo", fontWeight = FontWeight.SemiBold) },
             )
         }
-        item {
-            TipCard(
-                title = "1. Entenda o que é ESG",
-                content = "ESG significa Environmental (Ambiental), Social e Governance (Governança). São três pilares usados para medir a sustentabilidade e o impacto ético de um investimento em uma empresa."
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            OutlinedTextField(
+                value = uiState.query,
+                onValueChange = { tipsViewModel.onQueryChange(it) },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                placeholder = { Text("Buscar dicas por palavra-chave...") },
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
             )
-        }
-        item {
-            TipCard(
-                title = "2. Pesquise os Ratings ESG",
-                content = "Use ferramentas como a nossa para verificar a pontuação ESG das empresas. Ratings altos geralmente indicam melhores práticas de sustentabilidade e menor risco a longo prazo."
-            )
-        }
-        item {
-            TipCard(
-                title = "3. Diversifique seus Investimentos ESG",
-                content = "Não coloque todo o seu capital em uma única empresa ou setor. Diversificar ajuda a mitigar riscos e permite que você apoie a sustentabilidade em várias frentes da economia."
-            )
-        }
-        item {
-            TipCard(
-                title = "4. Pense a Longo Prazo",
-                content = "Investimento responsável é uma maratona, não uma corrida. Empresas com fortes práticas ESG tendem a ser mais resilientes e a performar melhor ao longo do tempo."
-            )
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TipCategory.values().forEach { category ->
+                    FilterChip(
+                        selected = category in uiState.selectedCategories,
+                        onClick = { tipsViewModel.toggleCategory(category) },
+                        label = { Text(category.name.replaceFirstChar { it.titlecase(Locale.getDefault()) }) }
+                    )
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(items = uiState.filteredTips, key = { it.id }) { tip ->
+                    TipCard(tip = tip, onClick = { /* TODO: Implementar navegação para detalhe da dica */ })
+                }
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+            }
         }
     }
 }
 
 @Composable
-fun TipCard(title: String, content: String) {
+private fun TipCard(
+    tip: InvestmentTip,
+    onClick: () -> Unit
+) {
     Card(
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(content, fontSize = 16.sp, lineHeight = 24.sp)
+        Row(
+            Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = tip.category.name.first().toString(),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.width(14.dp))
+
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = tip.title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = tip.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(Modifier.width(10.dp))
+            Icon(
+                imageVector = Icons.Outlined.Warning,
+                contentDescription = "Ver detalhe"
+            )
         }
     }
 }

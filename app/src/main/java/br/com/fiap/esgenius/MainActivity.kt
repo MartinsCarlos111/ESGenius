@@ -15,6 +15,7 @@ import br.com.fiap.esgenius.ui.component.AppBottomNavigationBar
 import br.com.fiap.esgenius.ui.screen.*
 import br.com.fiap.esgenius.ui.theme.ESGeniusTheme
 import br.com.fiap.esgenius.viewmodel.CompanyViewModel
+import br.com.fiap.esgenius.viewmodel.TipsViewModel
 
 enum class Screen {
     Home, CompanyList, Details, Historical, InvestmentTips
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
                 val companyViewModel: CompanyViewModel = viewModel()
                 var currentScreen by remember { mutableStateOf(Screen.Home) }
                 var selectedCompany by remember { mutableStateOf<Company?>(null) }
+                val tipsViewModel: TipsViewModel = viewModel()
 
                 Scaffold(
                     bottomBar = {
@@ -74,7 +76,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             Screen.InvestmentTips -> {
-                                ResponsibleInvestmentScreen()
+                                ResponsibleInvestmentScreen(tipsViewModel = tipsViewModel)
                             }
                         }
                     }

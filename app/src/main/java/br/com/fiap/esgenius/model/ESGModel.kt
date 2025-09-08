@@ -26,3 +26,13 @@ data class Company(
     val latestESG: ESGData,
     val history: List<ESGData>
 )
+
+enum class TipCategory { GOVERNANCE, ENVIRONMENTAL, RISK, DIVERSIFICATION, EDUCATION }
+
+data class InvestmentTip(
+    val id: Int,
+    val title: String,
+    val description: String,
+    val category: TipCategory,
+    val sources: List<String> = emptyList()
+)
